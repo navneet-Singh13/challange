@@ -39,6 +39,22 @@ jobs:
         echo "HOST: ${{ secrets.HOST }}"
         echo "USER: ${{ secrets.USER }}"
 
+    - name: Test SSH Connection
+      env:
+        HOST: ${{ secrets.HOST }}
+        USER: ${{ secrets.USER }}
+      run: |
+        echo "Testing SSH connection..."
+        ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'SSH connection successful'"
+
+    - name: Test SCP Command
+      env:
+        HOST: ${{ secrets.HOST }}
+        USER: ${{ secrets.USER }}
+      run: |
+        echo "Testing SCP command..."
+        scp -i key.pem -r . $USER@$HOST:/home/$USER/test_dir
+
     - name: Deploy to VM
       env:
         HOST: ${{ secrets.HOST }}
