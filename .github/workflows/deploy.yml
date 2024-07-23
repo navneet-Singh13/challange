@@ -26,6 +26,14 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
         chmod 600 key.pem
 
+    - name: Verify SSH Key File
+      run: ls -l key.pem
+
+    - name: Verify SSH Key Content
+      run: |
+        head -n 5 key.pem
+        tail -n 5 key.pem
+
     - name: Debug Variables
       run: |
         echo "HOST: ${{ secrets.HOST }}"
