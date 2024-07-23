@@ -21,12 +21,24 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Save SSH key
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+        chmod 600 key.pem
+
+    - name: Debug Variables
+      run: |
+        echo "HOST: ${{ secrets.HOST }}"
+        echo "USER: ${{ secrets.USER }}"
+
     - name: Deploy to VM
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         HOST: ${{ secrets.HOST }}
         USER: ${{ secrets.USER }}
       run: |
-        ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY $USER@$HOST "pm2 stop all || true"
-        scp -i $SSH_PRIVATE_KEY -r . $USER@$HOST:/home/$USER/app
-        ssh -i $SSH_PRIVATE_KEY $USER@$HOST "cd /home/$USER/app && npm install && sudo pm2 start index.js --name backend-api"
+        echo "Stopping existing processes on the server..."
+        ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "pm2 stop all || true"
+        echo "Copying project files to the server..."
+        scp -i key.pem -r . $USER@$HOST:/home/$USER/app
+        echo "Installing dependencies and starting the application..."
+        ssh -i key.pem $USER@$HOST "cd /home/$USER/app && npm install && sudo pm2 start index.js --name backend-api"
